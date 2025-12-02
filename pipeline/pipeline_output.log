@@ -1,0 +1,110 @@
+2025-11-28 15:36:28,856 - __main__ - INFO - Initializing ML Pipeline
+2025-11-28 15:36:28,857 - ejecutador - INFO - ================================================================================
+2025-11-28 15:36:28,857 - ejecutador - INFO - STARTING ML PIPELINE EXECUTION
+2025-11-28 15:36:28,857 - ejecutador - INFO - ================================================================================
+2025-11-28 15:36:28,857 - ejecutador - INFO - Loading data from data_temp.xlsx
+2025-11-28 15:36:39,814 - ejecutador - INFO - Data loaded successfully. Shape: (29230, 34)
+2025-11-28 15:36:39,968 - ejecutador - INFO - Preparing data with target column: 2025-9
+2025-11-28 15:36:39,974 - ejecutador - INFO - Features shape: (29230, 33), Target shape: (29230,)
+2025-11-28 15:36:39,974 - ejecutador - INFO - Starting row cleaning (pre-split)
+2025-11-28 15:36:39,983 - processing - INFO - Starting clean_rows (pre-split row cleaning)
+2025-11-28 15:36:39,985 - processing - INFO - Column names normalized
+2025-11-28 15:36:40,023 - processing - INFO - Removed 1 duplicate rows
+2025-11-28 15:36:40,024 - processing - INFO - Value filtering skipped in clean_rows (no config)
+2025-11-28 15:36:40,024 - processing - INFO - Finished clean_rows. Rows remaining: 29229
+2025-11-28 15:36:40,024 - ejecutador - INFO - Cleaning stats: {'duplicates_removed': 1}
+2025-11-28 15:36:40,030 - ejecutador - INFO - Rows removed during cleaning: 1
+2025-11-28 15:36:40,030 - ejecutador - INFO - Features shape: (29229, 33), Target shape: (29229,)
+2025-11-28 15:36:40,032 - ejecutador - INFO - Splitting data with test_size=0.19999999999999996
+2025-11-28 15:36:40,043 - ejecutador - INFO - Training set: (23383, 33), Test set: (5846, 33)
+2025-11-28 15:36:40,043 - ejecutador - INFO - Starting data processing
+2025-11-28 15:36:40,043 - processing - INFO - Starting data processing pipeline (post-split, no row drops)
+2025-11-28 15:36:40,046 - processing - INFO - Column names normalized
+2025-11-28 15:36:40,050 - processing - INFO - Selected usable columns: ['20241', '20242', '20243', '20244', '20245', '20246', '20247', '20248', '20249', '202410', '202411', '202412', '20251', '20252', '20253', '20254', '20255', '20256', '20257', '20258']
+2025-11-28 15:36:40,051 - processing - INFO - Selected usable columns (20 columns)
+2025-11-28 15:36:40,051 - processing - INFO - No categorical columns found to remove
+2025-11-28 15:36:40,052 - processing - INFO - Removed categorical columns: []
+2025-11-28 15:36:40,069 - processing - INFO - Missing values handled by imputation
+2025-11-28 15:36:40,069 - processing - INFO - Outlier detection skipped (disabled in config)
+2025-11-28 15:36:40,076 - processing - INFO - Converting 777 negative values to 0 in features
+2025-11-28 15:36:40,102 - processing - INFO - Features scaled
+2025-11-28 15:36:40,103 - ejecutador - INFO - Processed X_train shape: (23383, 20)
+2025-11-28 15:36:40,103 - processing - INFO - Starting data processing pipeline (post-split, no row drops)
+2025-11-28 15:36:40,104 - processing - INFO - Column names normalized
+2025-11-28 15:36:40,106 - processing - INFO - Selected usable columns: ['20241', '20242', '20243', '20244', '20245', '20246', '20247', '20248', '20249', '202410', '202411', '202412', '20251', '20252', '20253', '20254', '20255', '20256', '20257', '20258']
+2025-11-28 15:36:40,106 - processing - INFO - Selected usable columns (20 columns)
+2025-11-28 15:36:40,106 - processing - INFO - No categorical columns found to remove
+2025-11-28 15:36:40,106 - processing - INFO - Removed categorical columns: []
+2025-11-28 15:36:40,108 - processing - INFO - Missing values handled by imputation
+2025-11-28 15:36:40,108 - processing - INFO - Outlier detection skipped (disabled in config)
+2025-11-28 15:36:40,109 - processing - INFO - Converting 196 negative values to 0 in features
+2025-11-28 15:36:40,114 - processing - INFO - Features scaled
+2025-11-28 15:36:40,115 - ejecutador - INFO - Processed X_test shape: (5846, 20)
+2025-11-28 15:36:40,115 - ejecutador - INFO - Training classical ML models
+2025-11-28 15:36:40,118 - ejecutador - ERROR - Pipeline execution failed: Input y contains NaN.
+Traceback (most recent call last):
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\ejecutador.py", line 394, in run_complete_pipeline
+    models = self.train_classic_models(tune=tune_models)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\ejecutador.py", line 231, in train_classic_models
+    model, info = self.ml_models.logistic_regression(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\ml_classic.py", line 56, in logistic_regression
+    model.fit(X_train, y_train)
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\linear_model\_base.py", line 601, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 2961, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 1387, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 1397, in _check_y
+    y = check_array(
+        ^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 1107, in check_array
+    _assert_all_finite(
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 120, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 169, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+2025-11-28 15:36:40,259 - __main__ - ERROR - Pipeline failed: Input y contains NaN.
+Traceback (most recent call last):
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\main.py", line 87, in main
+    results = pipeline.run_complete_pipeline(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\ejecutador.py", line 394, in run_complete_pipeline
+    models = self.train_classic_models(tune=tune_models)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\ejecutador.py", line 231, in train_classic_models
+    model, info = self.ml_models.logistic_regression(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\ml_classic.py", line 56, in logistic_regression
+    model.fit(X_train, y_train)
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\linear_model\_base.py", line 601, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 2961, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 1387, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 1397, in _check_y
+    y = check_array(
+        ^^^^^^^^^^^^
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 1107, in check_array
+    _assert_all_finite(
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 120, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "C:\Users\Sebas\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\sklearn\utils\validation.py", line 169, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.

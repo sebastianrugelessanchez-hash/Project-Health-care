@@ -1,0 +1,120 @@
+================================================================================
+COMANDOS PARA EJECUTAR EL PIPELINE ML - HEALTHCARE PROJECT
+================================================================================
+
+FECHA: 2025-11-28
+INSTRUCCIONES: Copia y pega el comando que desees en PowerShell/CMD
+
+================================================================================
+OPCIÓN 1: CON TUNING DE HIPERPARÁMETROS (RECOMENDADO - MÁS PRECISO)
+================================================================================
+Tiempo estimado: 30-60 minutos (depende del tamaño de los datos)
+
+python main.py --data "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Data base\Reporte de prueba.xlsx" --target "2025-9"
+
+Nota: Este comando ejecutará:
+- Linear Regression (sin tuning)
+- Random Forest (tuning: 3 × 4 × 3 × 3 = 108 combinaciones)
+- SVM (tuning: 4 × 2 × 2 = 16 combinaciones)
+- Gradient Boosting (tuning: 3 × 3 × 3 × 3 = 81 combinaciones)
+- Neural Network (tuning: 3 × 2 × 2 × 2 = 24 combinaciones)
+- 4 Ensemble Models (Voting, Stacking, AdaBoost, Bagging)
+
+Total: 5 modelos clásicos + 4 ensemble = 9 modelos
+GridSearchCV con 5-fold cross-validation
+
+================================================================================
+OPCIÓN 2: SIN TUNING (MÁS RÁPIDO - PARA PRUEBAS)
+================================================================================
+Tiempo estimado: 5-15 minutos
+
+python main.py --data "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Data base\Reporte de prueba.xlsx" --target "2025-9" --no-tune
+
+Nota: Usa parámetros por defecto. Más rápido pero menos optimizado.
+
+================================================================================
+OPCIÓN 3: CON SALIDA EN DIRECTORIO PERSONALIZADO
+================================================================================
+
+python main.py --data "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Data base\Reporte de prueba.xlsx" --target "2025-9" --output "mis_resultados"
+
+Los resultados se guardarán en la carpeta "mis_resultados" en lugar de "results"
+
+================================================================================
+PASOS A SEGUIR:
+================================================================================
+
+1. Abre PowerShell o CMD
+2. Navega a la carpeta del pipeline:
+   cd "C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline"
+
+3. Ejecuta UNO de los comandos anteriores
+   (Recomendado: OPCIÓN 1 con tuning)
+
+4. Espera a que se complete (verás logs en la consola)
+
+5. Los resultados estarán en:
+   C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Coding\pipeline\results\
+
+================================================================================
+CONFIGURACIÓN ACTUAL:
+================================================================================
+
+TARGET COLUMN:     2025-9 (valores a predecir)
+FEATURE COLUMNS:   2024-1 a 2025-8 (20 columnas)
+TRAIN/TEST SPLIT:  80% / 20%
+CROSS-VALIDATION:  5-fold KFold
+SCALING:           StandardScaler
+MISSING VALUES:    Imputación por media
+NEGATIVE VALUES:   Convertidos a 0
+
+================================================================================
+ARCHIVOS GENERADOS DESPUÉS DE COMPLETAR:
+================================================================================
+
+results/
+├── evaluation_results.csv          (Métricas de todos los modelos)
+├── pipeline_info.json              (Información de la ejecución)
+├── models/                         (Modelos entrenados guardados)
+└── pipeline.log                    (Logs detallados)
+
+Las métricas incluyen: R², MSE, RMSE, MAE
+
+================================================================================
+SI NECESITAS DETENER LA EJECUCIÓN:
+================================================================================
+
+Presiona: Ctrl + C
+
+Esto detendrá el pipeline sin error crítico.
+
+================================================================================
+NOTA IMPORTANTE:
+================================================================================
+
+Con TUNING (Opción 1):
+- Se probarán muchas combinaciones de parámetros
+- Puede tomar 30-60+ minutos
+- Los resultados serán más optimizados
+- Usa todos los núcleos del CPU (n_jobs = -1)
+
+Sin TUNING (Opción 2):
+- Mucho más rápido (5-15 minutos)
+- Usa parámetros por defecto
+- Útil para pruebas iniciales
+- Aún entrena los 9 modelos
+
+================================================================================
+¿PREGUNTAS O PROBLEMAS?
+================================================================================
+
+Los logs estarán disponibles en:
+- Consola (en tiempo real)
+- Archivo: results/pipeline.log (después de completar)
+
+Asegúrate de:
+✓ Estar en la carpeta correcta
+✓ El archivo Excel existe en la ruta especificada
+✓ Tener Python y librerías instaladas (sklearn, pandas, numpy)
+
+================================================================================
