@@ -415,7 +415,8 @@ class PipelineOrchestrator:
             best_model = models[best_model_name]
             cv_results = self.perform_cross_validation(best_model, best_model_name)
 
-            # Generate reports
+            # Generate reports with primary metrics (MAE, RMSE, R2)
+            best_metrics = evaluation_results.iloc[0]
             pipeline_summary = self.reporter.create_pipeline_summary({
                 'total_samples': len(self.data),
                 'features': self.X.shape[1],
@@ -423,7 +424,9 @@ class PipelineOrchestrator:
                 'processing_config': DATA_PARAMS,
                 'models': list(models.keys()),
                 'best_model': best_model_name,
-                'best_r2': evaluation_results.iloc[0]['R2-Score']
+                'best_mae': best_metrics['MAE'],
+                'best_rmse': best_metrics['RMSE'],
+                'best_r2': best_metrics['R2-Score']
             })
 
             logger.info(pipeline_summary)

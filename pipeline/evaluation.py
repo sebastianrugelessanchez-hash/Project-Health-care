@@ -63,15 +63,17 @@ class ModelEvaluator:
 
         self.results[model_name] = metrics
 
-        # Log results
+        # Log results (PRIMARY METRICS: MAE, RMSE, R2 highlighted first)
         logger.info(f"\n{'='*50}")
         logger.info(f"Model: {model_name}")
         logger.info(f"{'='*50}")
-        logger.info(f"MSE:  {metrics['mse']:.4f}")
-        logger.info(f"RMSE: {metrics['rmse']:.4f}")
+        logger.info(f"--- PRIMARY METRICS ---")
         logger.info(f"MAE:  {metrics['mae']:.4f}")
-        logger.info(f"MedAE: {metrics['medae']:.4f}")
+        logger.info(f"RMSE: {metrics['rmse']:.4f}")
         logger.info(f"R²:   {metrics['r2']:.4f}")
+        logger.info(f"--- Secondary Metrics ---")
+        logger.info(f"MSE:  {metrics['mse']:.4f}")
+        logger.info(f"MedAE: {metrics['medae']:.4f}")
         logger.info(f"EVS:  {metrics['evs']:.4f}")
         if mape is not None:
             logger.info(f"MAPE: {metrics['mape']:.4f}")
@@ -97,16 +99,20 @@ class ModelEvaluator:
             metrics = self.evaluate_model(model, X_test, y_test, name)
             results_list.append({
                 'Model': name,
-                'MSE': metrics['mse'],
-                'RMSE': metrics['rmse'],
+                # Primary metrics first
                 'MAE': metrics['mae'],
-                'MedAE': metrics['medae'],
+                'RMSE': metrics['rmse'],
                 'R2-Score': metrics['r2'],
+                # Secondary metrics
+                'MSE': metrics['mse'],
+                'MedAE': metrics['medae'],
                 'EVS': metrics['evs'],
                 'MAPE': metrics['mape']
             })
 
-        return pd.DataFrame(results_list).sort_values('R2-Score', ascending=False)
+        # Sort by MAE (lower is better) as primary, then RMSE, then R2 (higher is better)
+        df = pd.DataFrame(results_list)
+        return df.sort_values(['MAE', 'RMSE', 'R2-Score'], ascending=[True, True, False])
 
     def compare_results(self) -> pd.DataFrame:
         """Compare all evaluated regression models"""
@@ -117,23 +123,28 @@ class ModelEvaluator:
         for model_name, metrics in self.results.items():
             comparison_data.append({
                 'Model': model_name,
-                'MSE': metrics['mse'],
-                'RMSE': metrics['rmse'],
+                # Primary metrics first
                 'MAE': metrics['mae'],
-                'MedAE': metrics['medae'],
+                'RMSE': metrics['rmse'],
                 'R2-Score': metrics['r2'],
+                # Secondary metrics
+                'MSE': metrics['mse'],
+                'MedAE': metrics['medae'],
                 'EVS': metrics['evs'],
                 'MAPE': metrics['mape']
             })
 
-        return pd.DataFrame(comparison_data).sort_values('R2-Score', ascending=False)
+        # Sort by MAE (lower is better) as primary, then RMSE, then R2 (higher is better)
+        df = pd.DataFrame(comparison_data)
+        return df.sort_values(['MAE', 'RMSE', 'R2-Score'], ascending=[True, True, False])
 
-    def get_best_model(self, metric: str = 'r2') -> str:
+    def get_best_model(self, metric: str = 'mae') -> str:
         """
         Get the name of the best performing model
 
         Args:
-            metric: Metric to use for comparison ('r2', 'mse', 'rmse', 'mae')
+            metric: Metric to use for comparison ('mae', 'rmse', 'r2', 'mse')
+                    Default is 'mae' (primary metric)
 
         Returns:
             Name of the best model

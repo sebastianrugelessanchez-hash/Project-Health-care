@@ -39,15 +39,15 @@ def main():
     parser.add_argument(
         '--data',
         type=str,
-        required=True,
-        help='Path to input data file (CSV, Excel, JSON, Parquet)'
+        default='/Users/sebas.12/Desktop/Proyectos/Project Healthcare/Data base/Reporte de prueba.xlsx',
+        help='Path to input data file (default: Reporte de prueba.xlsx)'
     )
     parser.add_argument(
         '--target',
         type=str,
-        required=True,
+        default=['2025-9'],
         nargs='+',
-        help='Name of target column(s) - can specify multiple columns'
+        help='Name of target column(s) - default: 2025-9'
     )
     parser.add_argument(
         '--output',
@@ -93,7 +93,8 @@ def main():
         logger.info("Pipeline execution completed successfully!")
         logger.info(f"Results saved to: {args.output}")
 
-        # Print summary
+        # Print summary with primary metrics (MAE, RMSE, R2)
+        best_metrics = results['evaluation_results'].iloc[0]
         print("\n" + "=" * 80)
         print("PIPELINE EXECUTION SUMMARY")
         print("=" * 80)
@@ -101,7 +102,11 @@ def main():
         print(f"Target Column(s): {target_column}")
         print(f"Output Directory: {args.output}")
         print(f"\nBest Model: {results['best_model_name']}")
-        print(f"Best R² Score: {results['evaluation_results'].iloc[0]['R2-Score']:.4f}")
+        print("-" * 40)
+        print("PRIMARY METRICS:")
+        print(f"  MAE:  {best_metrics['MAE']:.4f}")
+        print(f"  RMSE: {best_metrics['RMSE']:.4f}")
+        print(f"  R²:   {best_metrics['R2-Score']:.4f}")
         print("=" * 80 + "\n")
 
     except Exception as e:

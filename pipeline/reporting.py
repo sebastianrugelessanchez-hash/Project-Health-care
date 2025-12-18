@@ -219,7 +219,12 @@ Models Evaluated:
 {self._format_models(pipeline_data.get('models', []))}
 
 Best Model: {pipeline_data.get('best_model', 'N/A')}
-Best F1-Score: {pipeline_data.get('best_f1', 'N/A')}
+
+Primary Metrics:
+{'-'*80}
+  MAE:  {pipeline_data.get('best_mae', 'N/A')}
+  RMSE: {pipeline_data.get('best_rmse', 'N/A')}
+  R²:   {pipeline_data.get('best_r2', 'N/A')}
 
 {'='*80}
         """

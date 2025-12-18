@@ -4,14 +4,17 @@ Defines core rules, evaluation metrics, and global parameters for the pipeline
 """
 
 # ============ EVALUATION METRICS ============
+# Primary metrics for regression evaluation (in order of importance)
+PRIMARY_METRICS = ['MAE', 'RMSE', 'R2-Score']
+
 METRICS = {
-    'accuracy': True,
-    'precision': True,
-    'recall': True,
-    'f1': True,
-    'roc_auc': True,
-    'confusion_matrix': True,
-    'classification_report': True
+    'mae': True,       # Mean Absolute Error - primary
+    'rmse': True,      # Root Mean Squared Error - primary
+    'r2': True,        # R-squared - primary
+    'mse': True,       # Mean Squared Error
+    'medae': True,     # Median Absolute Error
+    'evs': True,       # Explained Variance Score
+    'mape': True       # Mean Absolute Percentage Error
 }
 
 # ============ CROSS-VALIDATION PARAMETERS ============
@@ -103,7 +106,7 @@ FILE_PATHS = {
 }
 
 DATABASE_PATHS = {
-    'healthcare_data': r"C:\Users\Sebas\OneDrive\Desktop\Project Healthcare\Data base\Reporte de prueba.xlsx",  # Main healthcare dataset
+    'healthcare_data': '/Users/sebas.12/Desktop/Proyectos/Project Healthcare/Data base/Reporte de prueba.xlsx',  # Main healthcare dataset
     'training_data': 'data/training_data.csv',                  # Training dataset
     'validation_data': 'data/validation_data.csv',              # Validation dataset
     'test_data': 'data/test_data.csv',                          # Test dataset
