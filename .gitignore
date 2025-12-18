@@ -2,8 +2,11 @@
 data/
 models/
 logs/
-results/
+Coding/pipeline/results/
 *.log
+
+# Keep root-level analysis results
+# /results/ and /outlier_analysis/ are tracked
 
 # Old pipeline location (now in Coding/pipeline/)
 /pipeline/
