@@ -2,6 +2,15 @@
 data/
 models/
 logs/
+results/
+*.log
+
+# Old pipeline location (now in Coding/pipeline/)
+/pipeline/
+
+# Temporary data files
+**/data_temp.xlsx
+**/pipeline_output.log
 
 # Cache
 __pycache__/
