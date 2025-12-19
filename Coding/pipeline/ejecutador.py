@@ -51,8 +51,10 @@ class PipelineOrchestrator:
         self.reporter = PipelineReporter(output_dir)
 
         self.X_train = None
+        self.X_val = None
         self.X_test = None
         self.y_train = None
+        self.y_val = None
         self.y_test = None
         self.X = None
         self.y = None
@@ -156,36 +158,51 @@ class PipelineOrchestrator:
 
         return self.X, self.y
 
-    def split_data(self, test_size: float = None) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    def split_data(self, val_size: float = 0.2, test_size: float = 0.2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
         """
-        Split data into train and test sets
+        Split data into train, validation, and test sets.
+
+        Flow:
+        - Train (60%): Used for model training
+        - Validation (20%): Used for model selection (comparing models)
+        - Test (20%): Used ONLY for final evaluation (never seen during training/selection)
 
         Args:
-            test_size: Test set size (default from config)
+            val_size: Validation set size (default 0.2)
+            test_size: Test set size (default 0.2)
 
         Returns:
-            Tuple of (X_train, X_test, y_train, y_test)
+            Tuple of (X_train, X_val, X_test, y_train, y_val, y_test)
         """
-        if test_size is None:
-            test_size = 1 - DATA_PARAMS['train_test_split']
+        logger.info(f"Splitting data: train={1-val_size-test_size:.0%}, val={val_size:.0%}, test={test_size:.0%}")
 
-        logger.info(f"Splitting data with test_size={test_size}")
-
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+        # First split: separate test set (hold-out for final evaluation)
+        X_temp, self.X_test, y_temp, self.y_test = train_test_split(
             self.X, self.y,
             test_size=test_size,
-            random_state=PIPELINE_PARAMS['random_state'],
-            stratify=self.y if len(np.unique(self.y)) < 20 else None
+            random_state=PIPELINE_PARAMS['random_state']
         )
 
-        logger.info(f"Training set: {self.X_train.shape}, Test set: {self.X_test.shape}")
+        # Second split: separate validation from training
+        # Adjust val_size relative to remaining data
+        val_size_adjusted = val_size / (1 - test_size)
+        self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(
+            X_temp, y_temp,
+            test_size=val_size_adjusted,
+            random_state=PIPELINE_PARAMS['random_state']
+        )
+
+        logger.info(f"Training set: {self.X_train.shape}")
+        logger.info(f"Validation set: {self.X_val.shape}")
+        logger.info(f"Test set: {self.X_test.shape} (hold-out for final evaluation)")
 
         self.pipeline_info['data_info']['train_size'] = self.X_train.shape[0]
+        self.pipeline_info['data_info']['val_size'] = self.X_val.shape[0]
         self.pipeline_info['data_info']['test_size'] = self.X_test.shape[0]
 
-        return self.X_train, self.X_test, self.y_train, self.y_test
+        return self.X_train, self.X_val, self.X_test, self.y_train, self.y_val, self.y_test
 
-    def process_data(self, processing_config: Dict = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def process_data(self, processing_config: Dict = None) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         Process data according to configuration
 
@@ -193,7 +210,7 @@ class PipelineOrchestrator:
             processing_config: Custom processing configuration
 
         Returns:
-            Tuple of (processed_X_train, processed_X_test)
+            Tuple of (processed_X_train, processed_X_val, processed_X_test)
         """
         if processing_config is None:
             processing_config = DATA_PARAMS
@@ -204,27 +221,36 @@ class PipelineOrchestrator:
         full_config = processing_config.copy()
         full_config['value_filtering'] = VALUE_FILTERING
 
-        # Process training data
+        # Process training data (fit transformers)
         self.X_train = self.processor.process_pipeline(
             self.X_train, full_config, fit=True,
-            select_usable=True,  # Select only USABLE_COLUMNS for regression
+            select_usable=True,
             usable_columns=USABLE_COLUMNS,
-            filter_values_flag=False  # Disable value filtering
+            filter_values_flag=False
         )
         logger.info(f"Processed X_train shape: {self.X_train.shape}")
+
+        # Process validation data (using fitted transformers)
+        self.X_val = self.processor.process_pipeline(
+            self.X_val, full_config, fit=False,
+            select_usable=True,
+            usable_columns=USABLE_COLUMNS,
+            filter_values_flag=False
+        )
+        logger.info(f"Processed X_val shape: {self.X_val.shape}")
 
         # Process test data (using fitted transformers)
         self.X_test = self.processor.process_pipeline(
             self.X_test, full_config, fit=False,
-            select_usable=True,  # Select only USABLE_COLUMNS for regression
+            select_usable=True,
             usable_columns=USABLE_COLUMNS,
-            filter_values_flag=False  # Disable value filtering
+            filter_values_flag=False
         )
         logger.info(f"Processed X_test shape: {self.X_test.shape}")
 
         self.pipeline_info['processing_info'] = full_config
 
-        return self.X_train, self.X_test
+        return self.X_train, self.X_val, self.X_test
 
     def train_classic_models(self, tune: bool = True) -> Dict[str, Any]:
         """
@@ -331,9 +357,10 @@ class PipelineOrchestrator:
 
         return models
 
-    def evaluate_models(self, models: Dict[str, Any]) -> pd.DataFrame:
+    def evaluate_models_on_validation(self, models: Dict[str, Any]) -> pd.DataFrame:
         """
-        Evaluate all models on test set
+        Evaluate all models on VALIDATION set for model selection.
+        This is used to compare models and select the best one.
 
         Args:
             models: Dictionary of trained models
@@ -341,13 +368,48 @@ class PipelineOrchestrator:
         Returns:
             DataFrame with evaluation results
         """
-        logger.info("Evaluating models on test set")
+        logger.info("Evaluating models on VALIDATION set (for model selection)")
 
-        results = self.evaluator.evaluate_multiple_models(models, self.X_test, self.y_test)
-        self.reporter.save_model_comparison(results)
+        results = self.evaluator.evaluate_multiple_models(models, self.X_val, self.y_val)
 
-        logger.info("\nModel Comparison Results:")
+        logger.info("\nModel Comparison on Validation Set:")
         logger.info(results.to_string())
+
+        return results
+
+    def final_evaluation(self, best_model: Any, best_model_name: str) -> pd.DataFrame:
+        """
+        Final evaluation on TEST set (hold-out).
+        This should only be called ONCE with the selected best model.
+
+        Args:
+            best_model: The best model selected from validation
+            best_model_name: Name of the best model
+
+        Returns:
+            DataFrame with final test evaluation results
+        """
+        logger.info("=" * 60)
+        logger.info("FINAL EVALUATION ON TEST SET (Hold-out)")
+        logger.info("=" * 60)
+
+        # Create a new evaluator instance for final test results
+        test_evaluator = ModelEvaluator()
+        metrics = test_evaluator.evaluate_model(best_model, self.X_test, self.y_test, best_model_name)
+
+        results = pd.DataFrame([{
+            'Model': best_model_name,
+            'MAE': metrics['mae'],
+            'RMSE': metrics['rmse'],
+            'R2-Score': metrics['r2'],
+            'MSE': metrics['mse'],
+            'MedAE': metrics['medae'],
+            'EVS': metrics['evs'],
+            'MAPE': metrics['mape']
+        }])
+
+        # Save final test results
+        self.reporter.save_model_comparison(results, filename='final_test_results.csv')
 
         return results
 
@@ -374,7 +436,14 @@ class PipelineOrchestrator:
                              tune_models: bool = True,
                              custom_config: Dict = None) -> Dict[str, Any]:
         """
-        Execute complete ML pipeline
+        Execute complete ML pipeline with proper train/val/test split.
+
+        Flow:
+        1. Load and clean data
+        2. Split into train (60%) / validation (20%) / test (20%)
+        3. Train models on train set
+        4. Select best model using VALIDATION set
+        5. Final evaluation on TEST set (only once)
 
         Args:
             data_path: Path to input data
@@ -398,25 +467,33 @@ class PipelineOrchestrator:
             processing_config = custom_config if custom_config else DATA_PARAMS
             self.clean_rows(processing_config)
 
-            # Split cleaned data
+            # Split cleaned data into train/val/test
             self.split_data()
 
             # Process data (post-split, no row removal)
             self.process_data(processing_config)
 
-            # Train models
+            # Train models on TRAIN set
             models = self.train_classic_models(tune=tune_models)
 
-            # Evaluate models
-            evaluation_results = self.evaluate_models(models)
+            # Evaluate models on VALIDATION set (for model selection)
+            validation_results = self.evaluate_models_on_validation(models)
+            self.reporter.save_model_comparison(validation_results, filename='validation_comparison.csv')
 
-            # Cross-validation (on best model)
-            best_model_name = evaluation_results.iloc[0]['Model']
+            # Select best model based on validation performance
+            best_model_name = validation_results.iloc[0]['Model']
             best_model = models[best_model_name]
+            logger.info(f"\nBest model selected (by validation MAE): {best_model_name}")
+
+            # Cross-validation on training data (for robustness check)
             cv_results = self.perform_cross_validation(best_model, best_model_name)
 
-            # Generate reports with primary metrics (MAE, RMSE, R2)
-            best_metrics = evaluation_results.iloc[0]
+            # FINAL EVALUATION on TEST set (hold-out, only once)
+            final_test_results = self.final_evaluation(best_model, best_model_name)
+
+            # Generate reports with primary metrics from FINAL TEST
+            final_metrics = final_test_results.iloc[0]
+            val_metrics = validation_results.iloc[0]
             pipeline_summary = self.reporter.create_pipeline_summary({
                 'total_samples': len(self.data),
                 'features': self.X.shape[1],
@@ -424,14 +501,14 @@ class PipelineOrchestrator:
                 'processing_config': DATA_PARAMS,
                 'models': list(models.keys()),
                 'best_model': best_model_name,
-                'best_mae': best_metrics['MAE'],
-                'best_rmse': best_metrics['RMSE'],
-                'best_r2': best_metrics['R2-Score']
+                'best_mae': final_metrics['MAE'],
+                'best_rmse': final_metrics['RMSE'],
+                'best_r2': final_metrics['R2-Score']
             })
 
             logger.info(pipeline_summary)
 
-            # Save results
+            # Save validation results
             self.reporter.save_evaluation_results(self.evaluator.results)
 
             logger.info("=" * 80)
@@ -440,10 +517,12 @@ class PipelineOrchestrator:
 
             return {
                 'models': models,
-                'evaluation_results': evaluation_results,
+                'validation_results': validation_results,
+                'final_test_results': final_test_results,
                 'cv_results': cv_results,
                 'best_model': best_model,
-                'best_model_name': best_model_name
+                'best_model_name': best_model_name,
+                'evaluation_results': final_test_results  # For backwards compatibility
             }
 
         except Exception as e:

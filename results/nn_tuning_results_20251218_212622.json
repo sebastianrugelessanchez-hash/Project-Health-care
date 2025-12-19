@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-12-18T21:26:22.891442",
+  "device": "GPU",
+  "tensorflow_available": true,
+  "test_metrics": {
+    "MAE": 31.0200144934797,
+    "RMSE": 281.02254954236633,
+    "R2": 0.7008085877479133,
+    "MSE": 78973.67335129176
+  },
+  "best_config": {
+    "name": "Deep_Swish_Adam",
+    "layers": [
+      512,
+      256,
+      128,
+      64
+    ],
+    "activation": "swish",
+    "output_activation": "linear",
+    "optimizer": "adam",
+    "loss": "mse",
+    "learning_rate": 0.001,
+    "dropout": 0.15,
+    "batch_norm": true,
+    "priority": 2
+  }
+}

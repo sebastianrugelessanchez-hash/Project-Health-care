@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-12-19T11:57:33.840043",
+  "device": "GPU",
+  "tensorflow_available": true,
+  "test_metrics": {
+    "MAE": 32.80433644727574,
+    "RMSE": 456.0095457221311,
+    "R2": 0.21220240169379623,
+    "MSE": 207944.70578970437
+  },
+  "best_config": {
+    "name": "Wide_Shallow_ReLU",
+    "layers": [
+      2048,
+      1024,
+      512
+    ],
+    "activation": "relu",
+    "output_activation": "linear",
+    "optimizer": "adam",
+    "loss": "mse",
+    "learning_rate": 0.001,
+    "dropout": 0.4,
+    "batch_norm": true,
+    "priority": 3
+  }
+}
