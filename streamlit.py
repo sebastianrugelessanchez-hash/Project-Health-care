@@ -13,7 +13,7 @@ import pandas as pd
 import streamlit as st
 
 # Default artifact path: project root / Modelos / svm_model.joblib
-DEFAULT_ARTIFACT_PATH = Path(__file__).resolve().parents[2] / "Modelos" / "svm_model.joblib"
+DEFAULT_ARTIFACT_PATH = Path(__file__).resolve().parents[2] / "tem_modelos" / "svm_model.joblib"
 PRED_COLUMN = "prediction_2025-9"
 
 
