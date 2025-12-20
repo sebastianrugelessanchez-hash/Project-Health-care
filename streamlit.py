@@ -1,19 +1,37 @@
 """
 Streamlit UI for the Healthcare forecasting project.
 Upload the latest month data (features 2024-1 ... 2025-8) and get the next-month forecast (2025-9)
-using the trained SVM artifact saved at Modelos/svm_model.joblib.
+using the trained SVM artifact saved at tem_modelos/svm_model.joblib.
 """
 
 from pathlib import Path
 from typing import Tuple
 import io
+import os
+import sys
 
 import joblib
 import pandas as pd
 import streamlit as st
 
-# Default artifact path: project root / Modelos / svm_model.joblib
-DEFAULT_ARTIFACT_PATH = Path(__file__).resolve().parents[2] / "tem_modelos" / "svm_model.joblib"
+
+# ----------------------------
+# Resolve import paths (Streamlit Cloud / Linux)
+# ----------------------------
+# Ensure local modules (e.g., processing.py) can be imported during joblib unpickling.
+BASE_DIR = Path(__file__).resolve().parent  # repo root if streamlit.py is at root
+PIPELINE_DIR = BASE_DIR / "Coding" / "pipeline"
+
+if PIPELINE_DIR.exists():
+    sys.path.insert(0, str(PIPELINE_DIR))
+else:
+    # Not fatal, but will likely break model loading if artifact depends on these modules
+    # Keep the message visible to help debugging deployments
+    pass
+
+
+# Default artifact path: project root / tem_modelos / svm_model.joblib
+DEFAULT_ARTIFACT_PATH = BASE_DIR / "tem_modelos" / "svm_model.joblib"
 PRED_COLUMN = "prediction_2025-9"
 
 
@@ -132,13 +150,20 @@ def main():
         "The trained SVM model will forecast the next month (2025-9)."
     )
 
-    artifact_path = st.text_input("Model artifact path", value=str(DEFAULT_ARTIFACT_PATH))
-    artifact_path = Path(artifact_path).expanduser()
+    # Optional: keep this input for debugging, but default to the correct repo-relative path.
+    artifact_path_str = st.text_input("Model artifact path", value=str(DEFAULT_ARTIFACT_PATH))
+    artifact_path = Path(artifact_path_str).expanduser()
+
+    # Helpful debug info for deployment
+    with st.expander("Deployment debug info", expanded=False):
+        st.write(f"BASE_DIR: {BASE_DIR}")
+        st.write(f"PIPELINE_DIR: {PIPELINE_DIR} (exists={PIPELINE_DIR.exists()})")
+        st.write(f"Artifact path: {artifact_path} (exists={artifact_path.exists()})")
 
     if not artifact_path.exists():
         st.error(
-            f"Artifact not found at {artifact_path}. "
-            "Run the training pipeline to generate Modelos/svm_model.joblib."
+            f"Artifact not found at: {artifact_path}. "
+            f"Expected something like: {DEFAULT_ARTIFACT_PATH}"
         )
         return
 
@@ -146,6 +171,10 @@ def main():
         artifact = load_artifact(artifact_path)
     except Exception as exc:
         st.error(f"Failed to load artifact: {exc}")
+        st.info(
+            "If the error mentions missing local modules (e.g., 'processing'), ensure the path "
+            "Coding/pipeline is present and contains the corresponding .py files."
+        )
         return
 
     usable_columns = artifact.get("usable_columns") or []
@@ -184,3 +213,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
